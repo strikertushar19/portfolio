@@ -49,11 +49,11 @@ const resumeData = {
         },
     ],
     skills: {
-        languages: ['C/C++', 'Python', 'JavaScript', 'Java', 'SQL'],
+        languages: ['GO','C/C++', 'Python', 'JavaScript', 'Java', 'SQL'],
         tools: ['AWS', 'Git', 'Jupyter Notebook', 'Google Colab', 'Linux', 'Windows'],
         libraries: ['Pandas', 'Numpy', 'Matplotlib', 'LangChain', 'FastAPI', 'Flask'],
         llm: ['Langchain', 'LangGraph', 'CrewAI', 'Swarm-Openai', 'Autogen', 'Semantic-kernel', 'Pinecone'],
-        web: ['HTML/CSS/JS', 'ReactJS/NextJS', 'Django', 'Nodejs', 'Express', 'Tailwind'],
+        web: ['HTML/CSS/JS', 'ReactJS/NextJS', 'GIN-GO','Django', 'Nodejs', 'Express', 'Tailwind',"FasTAPI","Flask"],
         softSkills: ['Communication', 'Teamwork', 'Problem-Solving', 'Rapid Learner'],
     },
     experience: [
