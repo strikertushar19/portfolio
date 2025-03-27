@@ -335,14 +335,16 @@ const App: React.FC = () => {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="mt-10 flex justify-center"
                 >
-                    <a
-                        href="https://drive.google.com/file/d/10D1NdCmuH2Vh6EpP7B8BkkP2gWXrp21k/view?usp=sharing"
-                       
-                        className="bg-gray-900 text-white px-6 py-3 rounded-full hover:bg-gray-800 transition-colors duration-300 flex items-center gap-3 font-medium inline-flex"
-                    >
-                        <Download className="h-6 w-6" />
-                        View Resume
-                    </a>
+                 <a
+  href="https://drive.google.com/file/d/10D1NdCmuH2Vh6EpP7B8BkkP2gWXrp21k/view?usp=sharing"
+  className="bg-gray-900 text-white px-6 py-3 rounded-full hover:bg-gray-800 transition-colors duration-300 flex items-center gap-3 font-medium"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Download className="h-6 w-6" />
+  View Resume
+</a>
+
                 </motion.div>
             </header>
 
