@@ -1,6 +1,7 @@
 "use client";
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, useAnimation } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import {
     Github,
     Linkedin,
@@ -12,8 +13,10 @@ import {
     FileText,
     Download,
     Twitter,
+    ExternalLink,
+    MapPin,
+    Phone,
 } from 'lucide-react';
-import { cn } from "../app/lib/utils/cn";
 
 // Resume Data (based on the provided PDF)
 const resumeData = {
@@ -53,7 +56,7 @@ const resumeData = {
         tools: ['AWS', 'Git', 'Jupyter Notebook', 'Google Colab', 'Linux', 'Windows'],
         libraries: ['Pandas', 'Numpy', 'Matplotlib', 'LangChain', 'FastAPI', 'Flask'],
         llm: ['Langchain', 'LangGraph', 'CrewAI', 'Swarm-Openai', 'Autogen', 'Semantic-kernel', 'Pinecone'],
-        web: ['HTML/CSS/JS', 'ReactJS/NextJS', 'GIN-GO','Django', 'Nodejs', 'Express', 'Tailwind',"FasTAPI","Flask"],
+        web: ['HTML/CSS/JS', 'ReactJS/NextJS', 'GIN-GO','Django', 'Nodejs', 'Express', 'Tailwind', 'FastAPI', 'Flask'],
         softSkills: ['Communication', 'Teamwork', 'Problem-Solving', 'Rapid Learner'],
     },
     experience: [
@@ -114,31 +117,57 @@ const resumeData = {
             url: 'https://www.freecodecamp.org/certification/chiefmasterinprogramming_2023/responsive-web-design',
         },
     ],
-    resumeUrl: '/TusharDogra.pdf',
+    resumeUrl: 'https://drive.google.com/file/d/10D1NdCmuH2Vh6EpP7B8BkkP2gWXrp21k/view?usp=sharing',
 };
 
-// Animation Variants
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            delayChildren: 0.3,
-            staggerChildren: 0.2,
-        },
-    },
-};
+// Animation hook for scrolling sections
+function useScrollAnimation() {
+    const controls = useAnimation();
+    const [ref, inView] = useInView({
+        threshold: 0.1,
+        triggerOnce: true,
+    });
 
+    useEffect(() => {
+        if (inView) {
+            controls.start('visible');
+        }
+    }, [controls, inView]);
+
+    return { ref, controls, variants: {
+        hidden: { opacity: 0, y: 50 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.6, 
+                staggerChildren: 0.1
+            }
+        }
+    }};
+}
+
+// Animation for children items
 const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
-        y: 0,
         opacity: 1,
-    },
+        y: 0,
+        transition: { duration: 0.5 }
+    }
 };
 
 // Helper function to generate social links
-const getSocialLinks = (contact: typeof resumeData.contact) => [
+interface Contact {
+    phone: string;
+    email: string;
+    location: string;
+    linkedin: string;
+    github: string;
+    twitter: string;
+}
+
+const getSocialLinks = (contact: Contact) => [
     {
         icon: <Github className="h-5 w-5" />,
         label: 'GitHub',
@@ -161,313 +190,637 @@ const getSocialLinks = (contact: typeof resumeData.contact) => [
     },
 ];
 
+interface ContactItemProps {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+    url?: string;
+}
+
+const ContactItem: React.FC<ContactItemProps> = ({ icon, label, value, url }) => (
+    <motion.div 
+        variants={itemVariants} 
+        className="flex items-center mb-4"
+    >
+        <span className="mr-3 text-indigo-600 bg-indigo-50 p-2 rounded-lg">
+            {icon}
+        </span>
+        <div>
+            <div className="text-xs text-gray-500">{label}</div>
+            {url ? (
+                <a href={url} className="text-gray-800 hover:text-indigo-600 transition-colors">
+                    {value}
+                </a>
+            ) : (
+                <div className="text-gray-800">{value}</div>
+            )}
+        </div>
+    </motion.div>
+);
+
 const SkillBadge = ({ skill }: { skill: string }) => (
-    <span className="bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full text-sm font-medium mr-2 mb-2 shadow-sm border border-gray-200">
+    <span className="bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-medium mr-2 mb-2 shadow-sm border border-indigo-100 hover:shadow-md transition-all duration-300">
         {skill}
     </span>
 );
 
-const SectionTitle = ({ title, icon: Icon }: { title: string; icon?: React.ReactNode }) => (
-    <div className="flex items-center mb-6">
-        {Icon && <span className="mr-3 text-gray-700">{Icon}</span>}
-        <h2 className="text-3xl font-semibold text-gray-900 border-b-2 border-gray-200 pb-2">
+const SectionTitle: React.FC<{ title: string; icon?: React.ReactNode }> = ({ title, icon }) => (
+    <div className="flex items-center mb-8">
+        {icon && (
+            <div className="mr-4 bg-gradient-to-r from-indigo-500 to-purple-500 p-3 rounded-lg text-white shadow-lg">
+                {icon}
+            </div>
+        )}
+        <h2 className="text-3xl font-bold text-gray-800 border-b-2 border-indigo-100 pb-2">
             {title}
         </h2>
     </div>
 );
 
-const ExperienceCard = ({ experience }: { experience: typeof resumeData.experience[0] }) => (
-    <motion.div variants={itemVariants} className="mb-8 p-6 rounded-xl bg-white shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
-        <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-semibold text-gray-900">{experience.title}</h3>
-            <p className="text-gray-600 text-sm">{experience.date}</p>
-        </div>
-        <p className="text-gray-700 text-sm mb-3">{experience.company} - {experience.location}</p>
-        <ul className="list-disc list-inside text-gray-800 space-y-2">
-            {experience.description.map((item, index) => (
-                <li key={index} className="text-gray-700">
-                    {item}
-                </li>
-            ))}
-        </ul>
-    </motion.div>
-);
+interface Experience {
+    title: string;
+    company: string;
+    date: string;
+    location: string;
+    description: string[];
+}
 
-const ProjectCard = ({ project }: { project: typeof resumeData.projects[0] }) => (
-    <motion.div variants={itemVariants} className="mb-8 p-6 rounded-xl bg-white shadow-lg border border-gray-100 transition-shadow hover:shadow-xl">
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">{project.title}</h3>
-        <p className="text-gray-700 leading-relaxed">{project.description}</p>
-        {project.githubUrl && (
-            <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline mt-2 inline-block"
-            >
-                GitHub
-            </a>
-        )}
-        {project.liveUrl && (
-            <a
-                href={project.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline mt-2 ml-4 inline-block"
-            >
-                Live Demo
-            </a>
-        )}
-         {project.pypiLink && (
-            <a
-                href={project.pypiLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline mt-2 ml-4 inline-block"
-            >
-                PyPI
-            </a>
-        )}
-    </motion.div>
-);
+const ExperienceCard: React.FC<{ experience: Experience }> = ({ experience }) => {
+    const { ref, controls, variants } = useScrollAnimation();
+    
+    return (
+        <motion.div 
+            ref={ref}
+            variants={variants}
+            initial="hidden"
+            animate={controls}
+            className="mb-8 p-6 rounded-xl bg-white shadow-lg border-l-4 border-indigo-400 transition-all duration-300 hover:shadow-xl hover:border-indigo-600"
+        >
+            <div className="flex justify-between items-start flex-wrap mb-3">
+                <h3 className="text-xl font-bold text-gray-800">{experience.title}</h3>
+                <p className="text-indigo-600 font-medium">{experience.date}</p>
+            </div>
+            <div className="flex items-center mb-4">
+                <Briefcase className="h-4 w-4 text-gray-500 mr-2" />
+                <p className="text-gray-700 font-medium">{experience.company}</p>
+                <span className="mx-2 text-gray-400">•</span>
+                <MapPin className="h-4 w-4 text-gray-500 mr-2" />
+                <p className="text-gray-700">{experience.location}</p>
+            </div>
+            <ul className="space-y-2">
+                {experience.description.map((item, index) => (
+                    <motion.li 
+                        key={index} 
+                        variants={itemVariants}
+                        className="flex text-gray-700"
+                    >
+                        <span className="text-indigo-500 mr-2">•</span>
+                        {item}
+                    </motion.li>
+                ))}
+            </ul>
+        </motion.div>
+    );
+};
 
-const CertificateCard = ({ certificate }: { certificate: typeof resumeData.certificates[0] }) => (
-    <motion.div variants={itemVariants} className="mb-4 p-4 rounded-lg bg-white shadow-md border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">{certificate.title}</h3>
-        <p className="text-gray-600 text-sm">{certificate.institution}</p>
-         {certificate.url && (
+interface Project {
+    title: string;
+    description: string;
+    githubUrl?: string;
+    liveUrl?: string;
+    pypiLink?: string;
+}
+
+const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+    const { ref, controls, variants } = useScrollAnimation();
+    
+    return (
+        <motion.div 
+            ref={ref}
+            variants={variants}
+            initial="hidden"
+            animate={controls}
+            className="mb-8 p-6 rounded-xl bg-white shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px]"
+        >
+            <h3 className="text-xl font-bold text-gray-800 mb-3">{project.title}</h3>
+            <p className="text-gray-700 leading-relaxed mb-4">{project.description}</p>
+            <div className="flex flex-wrap gap-2">
+                {project.githubUrl && (
+                    <a
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    >
+                        <Github className="h-4 w-4" />
+                        GitHub
+                    </a>
+                )}
+                {project.liveUrl && (
+                    <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                    >
+                        <ExternalLink className="h-4 w-4" />
+                        Live Demo
+                    </a>
+                )}
+                {project.pypiLink && (
+                    <a
+                        href={project.pypiLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                        <ExternalLink className="h-4 w-4" />
+                        PyPI
+                    </a>
+                )}
+            </div>
+        </motion.div>
+    );
+};
+
+interface Certificate {
+    title: string;
+    institution: string;
+    url?: string;
+}
+
+const CertificateCard: React.FC<{ certificate: Certificate }> = ({ certificate }) => (
+    <motion.div 
+        variants={itemVariants} 
+        className="mb-4 p-4 rounded-lg bg-white shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300"
+    >
+        <h3 className="text-lg font-semibold text-gray-800">{certificate.title}</h3>
+        <p className="text-gray-600 text-sm mb-2">{certificate.institution}</p>
+        {certificate.url && (
             <a
                 href={certificate.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:underline mt-2 inline-block"
+                className="text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 text-sm"
             >
+                <FileText className="h-3 w-3" />
                 View Certificate
             </a>
         )}
     </motion.div>
 );
 
-const EducationCard = ({ education }: { education: typeof resumeData.education[0] }) => (
-    <motion.div variants={itemVariants} className="mb-8 p-6 rounded-xl bg-white shadow-lg border border-gray-100">
-        <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-semibold text-gray-900">{education.degree}</h3>
-            <p className="text-gray-600 text-sm">{education.date}</p>
+interface Education {
+    degree: string;
+    institution: string;
+    date: string;
+    cgpa?: string;
+    grade?: string;
+    courses?: string[];
+}
+
+const EducationCard: React.FC<{ education: Education }> = ({ education }) => (
+    <motion.div 
+        variants={itemVariants} 
+        className="mb-8 p-6 rounded-xl bg-white shadow-lg border-l-4 border-indigo-400 transition-all duration-300 hover:shadow-xl hover:border-indigo-600"
+    >
+        <div className="flex justify-between items-start flex-wrap mb-3">
+            <h3 className="text-xl font-bold text-gray-800">{education.degree}</h3>
+            <p className="text-indigo-600 font-medium">{education.date}</p>
         </div>
-        <p className="text-gray-700 text-sm">{education.institution}</p>
-        {education.cgpa && <p className="text-gray-700 text-sm">{education.cgpa}</p>}
+        <p className="text-gray-700">{education.institution}</p>
+        {education.cgpa && <p className="text-gray-700 mt-1">{education.cgpa}</p>}
+        {education.grade && <p className="text-gray-700 mt-1">{education.grade}</p>}
         {education.courses && (
-            <>
-                <p className="text-gray-700 text-sm mt-3 font-medium">Relevant Coursework:</p>
-                <div className="flex flex-wrap mt-2">
+            <div className="mt-4">
+                <p className="text-gray-700 font-medium mb-2">Relevant Coursework:</p>
+                <div className="flex flex-wrap">
                     {education.courses.map((course) => (
                         <SkillBadge key={course} skill={course} />
                     ))}
                 </div>
-            </>
+            </div>
         )}
-        {education.grade && <p className="text-gray-700 text-sm">{education.grade}</p>}
     </motion.div>
 );
 
-const App: React.FC = () => {
+const App = () => {
     const socialLinks = getSocialLinks(resumeData.contact);
-
-    // Added this section for contributions
-    const contributionsSection = (
-        <section className="mb-16">
-            <SectionTitle title="Contributions" icon={<Github className="h-7 w-7" />} />
-            <motion.div variants={itemVariants} className="text-gray-700 leading-relaxed text-lg">
-                <p>
-                    For a detailed overview of my contributions, please visit my  <a href={resumeData.contact.github} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">GitHub profile</a>.
-                    Here, you can find a comprehensive record of my code, projects, and collaborations.
-                </p>
-                <br />
-                <p>
-                    My GitHub activity includes:
-                </p>
-                <ul className="list-disc list-inside text-gray-700 space-y-2">
-                    <li>  <span className="font-semibold">Code Repositories:</span>  You can view the source code of my projects.</li>
-                    <li>  <span className="font-semibold">Project Contributions:</span> See my involvement in various projects.</li>
-                    <li> <span className="font-semibold">Collaborations:</span>  Details on my work with other developers.</li>
-                </ul>
-            </motion.div>
-        </section>
-    );
-
+    const { ref: aboutRef, controls: aboutControls, variants: aboutVariants } = useScrollAnimation();
+    const { ref: contributionsRef, controls: contributionsControls, variants: contributionsVariants } = useScrollAnimation();
+    const { ref: educationRef, controls: educationControls, variants: educationVariants } = useScrollAnimation();
+    const { ref: skillsRef, controls: skillsControls, variants: skillsVariants } = useScrollAnimation();
+    const { ref: experienceRef, controls: experienceControls, variants: experienceVariants } = useScrollAnimation();
+    const { ref: projectsRef, controls: projectsControls, variants: projectsVariants } = useScrollAnimation();
+    const { ref: certificatesRef, controls: certificatesControls, variants: certificatesVariants } = useScrollAnimation();
+    const { ref: contactRef, controls: contactControls, variants: contactVariants } = useScrollAnimation();
 
     return (
-        <div className="bg-gray-50 text-gray-900 min-h-screen">
-            <header className="py-12 text-center">
+        <div className="bg-gradient-to-br from-gray-50 to-indigo-50 text-gray-900 min-h-screen">
+            {/* Hero Section with your image */}
+            <header className="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 md:p-12">
                 <motion.div
-                    initial={{ opacity: 0, y: -20 }}
+                    initial={{ opacity: 0, y: -50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="flex justify-center items-center gap-6"
+                    className="flex-1 text-center md:text-left max-w-xl mb-12 md:mb-0"
                 >
-                    <User className="h-20 w-20 text-gray-900" />
-                    <div>
-                        <h1 className="text-5xl font-bold text-gray-900">{resumeData.name}</h1>
-                        <p className="text-gray-700 text-2xl mt-2">{resumeData.tagline}</p>
+                    <span className="inline-block bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                        Software Developer
+                    </span>
+                    <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4 leading-tight">
+                        Hello, I'm <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">Tushar Dogra</span>
+                    </h1>
+                    <p className="text-lg text-gray-700 leading-relaxed mb-8">
+                        Passionate software developer specializing in full-stack development, LLM integration, and building innovative solutions.
+                    </p>
+                    <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                        <a
+                            href={resumeData.resumeUrl}
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <Download className="h-5 w-5" />
+                            Download Resume
+                        </a>
+                        <a
+                            href="#contact"
+                            className="bg-white text-indigo-700 border border-indigo-200 px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                        >
+                            Contact Me
+                        </a>
+                    </div>
+                    <div className="mt-8 flex gap-6 justify-center md:justify-start">
+                        {socialLinks.map((link) => (
+                            <a
+                                key={link.label}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-600 hover:text-indigo-600 transition-colors duration-300"
+                                aria-label={link.label}
+                            >
+                                {link.icon}
+                            </a>
+                        ))}
                     </div>
                 </motion.div>
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="mt-8 flex justify-center gap-8"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                    className="flex-1 flex justify-center items-center"
                 >
-                    {socialLinks.map((link) => (
-                        <a
-                            key={link.label}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-700 hover:text-gray-900 transition-colors duration-300"
-                            aria-label={link.label}
-                        >
-                            {link.icon}
-                        </a>
-                    ))}
-                </motion.div>
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="mt-10 flex justify-center"
-                >
-                 <a
-  href="https://drive.google.com/file/d/10D1NdCmuH2Vh6EpP7B8BkkP2gWXrp21k/view?usp=sharing"
-  className="bg-gray-900 text-white px-6 py-3 rounded-full hover:bg-gray-800 transition-colors duration-300 flex items-center gap-3 font-medium"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Download className="h-6 w-6" />
-  View Resume
-</a>
-
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-xl opacity-20"></div>
+                        <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-2xl">
+                            <img
+                                src="/face.jpg"
+                                alt="Tushar Dogra"
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                    </div>
                 </motion.div>
             </header>
 
-            <main className="container mx-auto px-6 py-10">
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                >
-                    <section className="mb-16">
-                        <SectionTitle title="About Me" icon={<User className="h-7 w-7" />} />
-                        <motion.div variants={itemVariants} className="text-gray-700 leading-relaxed text-lg">
-                            <p>
-                                Hello! I&apos;m <span className="font-semibold">{resumeData.name}</span>, a passionate software developer based in <span className="font-semibold">{resumeData.contact.location}</span>.
-                                I have a strong foundation in various programming languages and technologies, as you can see in my <span className="font-medium">skills</span> section.
+            <main className="container mx-auto px-6 py-16">
+                {/* About Section */}
+                <section id="about" className="mb-24">
+                    <motion.div
+                        ref={aboutRef}
+                        variants={aboutVariants}
+                        initial="hidden"
+                        animate={aboutControls}
+                    >
+                        <SectionTitle title="About Me" icon={<User className="h-6 w-6" />} />
+                        <motion.div variants={itemVariants} className="text-gray-700 leading-relaxed text-lg bg-white p-8 rounded-xl shadow-lg">
+                            <p className="mb-4">
+                                Hello! I'm <span className="font-semibold">{resumeData.name}</span>, a passionate software developer based in <span className="font-semibold">{resumeData.contact.location}</span>.
+                                I have a strong foundation in various programming languages and technologies, with expertise in full-stack development and AI integration.
                             </p>
-                            <br />
-                            <p>
+                            <p className="mb-4">
                                 I am currently pursuing my Bachelor of Information Technology degree from the <span className="font-medium">National Institute of Technology Srinagar</span>, with an expected graduation in 2025.
                             </p>
-                            <br />
-                            <p>
-                                I&apos;ve had the opportunity to work on exciting projects and internships, where I&apos;ve honed my skills in full-stack development, LLM integration, and optimization. I am a rapid learner, and I thrive in fast-paced environments where I can contribute to innovative solutions.
+                            <p className="mb-4">
+                                I've had the opportunity to work on exciting projects and internships, where I've honed my skills in full-stack development, LLM integration, and optimization. I am a rapid learner, and I thrive in fast-paced environments where I can contribute to innovative solutions.
                             </p>
-                            <br />
                             <p>
-                                I am always eager to learn new things and take on new challenges. Feel free to reach out to me via the links above!
+                                I am always eager to learn new things and take on new challenges. Feel free to reach out to me via the contact section below!
                             </p>
                         </motion.div>
-                    </section>
+                    </motion.div>
+                </section>
 
-                    {contributionsSection}
+                {/* Contributions Section */}
+                <section id="contributions" className="mb-24">
+                    <motion.div
+                        ref={contributionsRef}
+                        variants={contributionsVariants}
+                        initial="hidden"
+                        animate={contributionsControls}
+                    >
+                        <SectionTitle title="Contributions" icon={<Github className="h-6 w-6" />} />
+                        <motion.div variants={itemVariants} className="text-gray-700 leading-relaxed text-lg bg-white p-8 rounded-xl shadow-lg">
+                            <p className="mb-4">
+                                For a detailed overview of my contributions, please visit my <a href={resumeData.contact.github} target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 hover:underline">GitHub profile</a>.
+                                Here, you can find a comprehensive record of my code, projects, and collaborations.
+                            </p>
+                            <p className="mb-4">
+                                My GitHub activity includes:
+                            </p>
+                            <ul className="space-y-3">
+                                <li className="flex items-start">
+                                    <span className="text-indigo-500 mr-2">•</span>
+                                    <span className="font-semibold mr-2">Code Repositories:</span> You can view the source code of my projects.
+                                </li>
+                                <li className="flex items-start">
+                                    <span className="text-indigo-500 mr-2">•</span>
+                                    <span className="font-semibold mr-2">Project Contributions:</span> See my involvement in various projects.
+                                </li>
+                                <li className="flex items-start">
+                                    <span className="text-indigo-500 mr-2">•</span>
+                                    <span className="font-semibold mr-2">Collaborations:</span> Details on my work with other developers.
+                                </li>
+                            </ul>
+                        </motion.div>
+                    </motion.div>
+                </section>
 
-                    <section className="mb-16">
-                        <SectionTitle title="Education" icon={<GraduationCap className="h-7 w-7" />} />
+                {/* Education Section */}
+                <section id="education" className="mb-24">
+                    <motion.div
+                        ref={educationRef}
+                        variants={educationVariants}
+                        initial="hidden"
+                        animate={educationControls}
+                    >
+                        <SectionTitle title="Education" icon={<GraduationCap className="h-6 w-6" />} />
                         {resumeData.education.map((edu, index) => (
                             <EducationCard key={index} education={edu} />
                         ))}
-                    </section>
+                    </motion.div>
+                </section>
 
-                    <section className="mb-16">
-                        <SectionTitle title="Skills" icon={<Code className="h-7 w-7" />} />
+                {/* Skills Section */}
+                <section id="skills" className="mb-24">
+                    <motion.div
+                        ref={skillsRef}
+                        variants={skillsVariants}
+                        initial="hidden"
+                        animate={skillsControls}
+                        className="bg-white p-8 rounded-xl shadow-lg"
+                    >
+                        <SectionTitle title="Skills" icon={<Code className="h-6 w-6" />} />
                         <motion.div variants={itemVariants}>
-                            <div className="mb-8">
-                                <h4 className="font-semibold text-lg text-gray-800 mb-3">Programming Languages</h4>
-                                <div className="flex flex-wrap">
-                                    {resumeData.skills.languages.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
-                                    ))}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="mb-6">
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                        <span className="bg-indigo-100 text-indigo-600 p-1 rounded-md mr-2">
+                                            <Code className="h-4 w-4" />
+                                        </span>
+                                        Programming Languages
+                                    </h4>
+                                    <div className="flex flex-wrap">
+                                        {resumeData.skills.languages.map((skill) => (
+                                            <SkillBadge key={skill} skill={skill} />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="mb-8">
-                                <h4 className="font-semibold text-lg text-gray-800 mb-3">Tools & OS</h4>
-                                <div className="flex flex-wrap">
-                                    {resumeData.skills.tools.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
-                                    ))}
+                                <div className="mb-6">
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                        <span className="bg-indigo-100 text-indigo-600 p-1 rounded-md mr-2">
+                                            <Code className="h-4 w-4" />
+                                        </span>
+                                        Tools & OS
+                                    </h4>
+                                    <div className="flex flex-wrap">
+                                        {resumeData.skills.tools.map((skill) => (
+                                            <SkillBadge key={skill} skill={skill} />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                             <div className="mb-8">
-                                <h4 className="font-semibold text-lg text-gray-800 mb-3">Libraries & Frameworks</h4>
-                                <div className="flex flex-wrap">
-                                    {resumeData.skills.libraries.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
-                                    ))}
+                                <div className="mb-6">
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                        <span className="bg-indigo-100 text-indigo-600 p-1 rounded-md mr-2">
+                                            <Code className="h-4 w-4" />
+                                        </span>
+                                        Libraries & Frameworks
+                                    </h4>
+                                    <div className="flex flex-wrap">
+                                        {resumeData.skills.libraries.map((skill) => (
+                                            <SkillBadge key={skill} skill={skill} />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="mb-8">
-                                <h4 className="font-semibold text-lg text-gray-800 mb-3">LLM & Agentic AI Frameworks</h4>
-                                <div className="flex flex-wrap">
-                                    {resumeData.skills.llm.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
-                                    ))}
+                                <div className="mb-6">
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                        <span className="bg-indigo-100 text-indigo-600 p-1 rounded-md mr-2">
+                                            <Code className="h-4 w-4" />
+                                        </span>
+                                        LLM & Agentic AI Frameworks
+                                    </h4>
+                                    <div className="flex flex-wrap">
+                                        {resumeData.skills.llm.map((skill) => (
+                                            <SkillBadge key={skill} skill={skill} />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="mb-8">
-                                <h4 className="font-semibold text-lg text-gray-800 mb-3">Web Skills</h4>
-                                <div className="flex flex-wrap">
-                                    {resumeData.skills.web.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
-                                    ))}
+                                <div className="mb-6">
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                        <span className="bg-indigo-100 text-indigo-600 p-1 rounded-md mr-2">
+                                            <Code className="h-4 w-4" />
+                                        </span>
+                                        Web Skills
+                                    </h4>
+                                    <div className="flex flex-wrap">
+                                        {resumeData.skills.web.map((skill) => (
+                                            <SkillBadge key={skill} skill={skill} />
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold text-lg text-gray-800 mb-3">Soft Skills</h4>
-                                <div className="flex flex-wrap">
-                                    {resumeData.skills.softSkills.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
-                                    ))}
+                                <div>
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3 flex items-center">
+                                        <span className="bg-indigo-100 text-indigo-600 p-1 rounded-md mr-2">
+                                            <User className="h-4 w-4" />
+                                        </span>
+                                        Soft Skills
+                                    </h4>
+                                    <div className="flex flex-wrap">
+                                        {resumeData.skills.softSkills.map((skill) => (
+                                            <SkillBadge key={skill} skill={skill} />
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
-                    </section>
+                    </motion.div>
+                </section>
 
-                    <section className="mb-16">
-                        <SectionTitle title="Work Experience" icon={<Briefcase className="h-7 w-7" />} />
+                {/* Experience Section */}
+                <section id="experience" className="mb-24">
+                    <motion.div
+                        ref={experienceRef}
+                        variants={experienceVariants}
+                        initial="hidden"
+                        animate={experienceControls}
+                    >
+                        <SectionTitle title="Work Experience" icon={<Briefcase className="h-6 w-6" />} />
                         {resumeData.experience.map((exp, index) => (
                             <ExperienceCard key={index} experience={exp} />
                         ))}
-                    </section>
+                    </motion.div>
+                </section>
 
-                    <section className="mb-16">
-                        <SectionTitle title="Projects" icon={<Code className="h-7 w-7" />} />
-                        {resumeData.projects.map((project, index) => (
-                            <ProjectCard key={index} project={project} />
-                        ))}
-                    </section>
+                {/* Projects Section */}
+                <section id="projects" className="mb-24">
+                    <motion.div
+                        ref={projectsRef}
+                        variants={projectsVariants}
+                        initial="hidden"
+                        animate={projectsControls}
+                    >
+                        <SectionTitle title="Projects" icon={<Code className="h-6 w-6" />} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {resumeData.projects.map((project, index) => (
+                                <ProjectCard key={index} project={project} />
+                            ))}
+                        </div>
+                    </motion.div>
+                </section>
 
-                    <section className="mb-16">
-                        <SectionTitle title="Certificates" icon={<FileText className="h-7 w-7" />} />
-                        {resumeData.certificates.map((cert, index) => (
-                            <CertificateCard key={index} certificate={cert} />
-                        ))}
-                    </section>
-                </motion.div>
+                {/* Certificates Section */}
+                <section id="certificates" className="mb-24">
+                    <motion.div
+                        ref={certificatesRef}
+                        variants={certificatesVariants}
+                        initial="hidden"
+                        animate={certificatesControls}
+                    >
+                        <SectionTitle title="Certificates" icon={<FileText className="h-6 w-6" />} />
+                        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {resumeData.certificates.map((cert, index) => (
+                                <CertificateCard key={index} certificate={cert} />
+                            ))}
+                        </motion.div>
+                    </motion.div>
+                </section>
+
+                {/* Contact Section */}
+                <section id="contact" className="mb-24">
+                    <motion.div
+                        ref={contactRef}
+                        variants={contactVariants}
+                        initial="hidden"
+                        animate={contactControls}
+                    >
+                        <SectionTitle title="Contact Me" icon={<Mail className="h-6 w-6" />} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                            <motion.div variants={itemVariants} className="bg-white p-8 rounded-xl shadow-lg">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6">Get In Touch</h3>
+                                <ContactItem 
+                                    icon={<Mail className="h-5 w-5" />} 
+                                    label="Email" 
+                                    value={resumeData.contact.email} 
+                                    url={`mailto:${resumeData.contact.email}`} 
+                                />
+                                <ContactItem 
+                                    icon={<Phone className="h-5 w-5" />} 
+                                    label="Phone" 
+                                    value={resumeData.contact.phone} 
+                                    url={`tel:${resumeData.contact.phone}`} 
+                                />
+                                <ContactItem 
+                                    icon={<MapPin className="h-5 w-5" />} 
+                                    label="Location" 
+                                    value={resumeData.contact.location} 
+                                />
+                                <ContactItem 
+                                    icon={<Linkedin className="h-5 w-5" />} 
+                                    label="LinkedIn" 
+                                    value="Tushar Dogra" 
+                                    url={resumeData.contact.linkedin} 
+                                />
+                                <ContactItem 
+                                    icon={<Github className="h-5 w-5" />} 
+                                    label="GitHub" 
+                                    value="strikertushar19" 
+                                    url={resumeData.contact.github} 
+                                />
+                            </motion.div>
+                            <motion.div variants={itemVariants} className="bg-white p-8 rounded-xl shadow-lg">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6">Send Message</h3>
+                                <form className="space-y-4">
+                                    <div>
+                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                        <input 
+                                            type="text" 
+                                            id="name" 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                            placeholder="Your Name" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input 
+                                            type="email" 
+                                            id="email" 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                            placeholder="Your Email" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                                        <textarea 
+                                            id="message" 
+                                            rows={4} 
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                            placeholder="Your Message"
+                                        ></textarea>
+                                    </div>
+                                    <button 
+                                        type="submit" 
+                                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                                    >
+                                        Send Message
+                                    </button>
+                                </form>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                </section>
             </main>
 
-            <footer className="py-8 text-center text-gray-600 border-t border-gray-200 mt-12">
-                <p>&copy; {new Date().getFullYear()} Tushar Dogra. All rights reserved.</p>
+            <footer className="bg-gray-900 text-white py-12">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <div className="mb-6 md:mb-0">
+                            <h2 className="text-2xl font-bold mb-2">{resumeData.name}</h2>
+                            <p className="text-gray-400">{resumeData.tagline}</p>
+                        </div>
+                        <div className="flex gap-6">
+                            {socialLinks.map((link) => (
+                                <a
+                                    key={link.label}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                                    aria-label={link.label}
+                                >
+                                    {link.icon}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+                        <p>&copy; {new Date().getFullYear()} {resumeData.name}. All rights reserved.</p>
+                    </div>
+                </div>
             </footer>
         </div>
     );
 };
 
 export default App;
-
