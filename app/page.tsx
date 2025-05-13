@@ -25,7 +25,7 @@ const resumeData = {
     contact: {
         phone: '+918491057538',
         email: 'tushardogra19@gmail.com',
-        location: 'Udhampur, Jammu and Kashmir, India',
+        location: 'Chandigarh,India',
         linkedin: 'https://www.linkedin.com/in/tushar-dogra-55b687240/',
         github: 'https://github.com/strikertushar19',
         twitter: 'https://x.com/0Tushar'
