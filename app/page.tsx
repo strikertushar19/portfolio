@@ -478,7 +478,7 @@ const App = () => {
                             <img
                                 src="/face2.jpeg"
                                 alt="Tushar Dogra"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover object-top"
                             />
                         </div>
                     </div>
