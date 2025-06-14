@@ -434,6 +434,7 @@ const App = () => {
                     <p className="text-lg text-gray-700 leading-relaxed mb-8">
                         Passionate software developer specializing in full-stack development, LLM integration, and building innovative solutions.
                     </p>
+                    <a href="https://www.f6s.com/member/tushar-dogra?follow=1" target="_blank" rel="noopener noreferrer" title="Follow Tushar Dogra on F6S"><img src="https://www.f6s.com/images/f6s-follow-primary.png" width="78" height="22" alt="Follow Tushar Dogra on F6S" style={{ width: '78px', height: '22px', padding: '0px', margin: '0px' }} /></a>
                     <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                         <a
                             href={resumeData.resumeUrl}
