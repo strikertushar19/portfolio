@@ -1175,7 +1175,7 @@ const App = () => {
             <WhatICanOfferSection />
             <MyWorkSection />
             <WorkExperienceSection />
-            <TestimonialsSection />
+            {/* <TestimonialsSection /> */}
             <CertificatesSection />
             <Footer />
         </div>
