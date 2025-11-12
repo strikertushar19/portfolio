@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import Image from 'next/image';
 import {
     Github,
     Linkedin,
@@ -312,12 +313,15 @@ const AboutSection = () => {
                         className="relative"
                     >
                         <div className="relative w-full aspect-[3/4] max-w-md">
-                            <img
+                            <Image
                                 src="/face2.jpeg"
                                 alt={resumeData.name}
-                                className="w-full h-full object-cover grayscale"
+                                fill
+                                className="object-cover grayscale"
+                                loading="lazy"
+                                sizes="(max-width: 768px) 100vw, 50vw"
                             />
-        </div>
+                        </div>
     </motion.div>
                     
                     {/* Text Section */}
@@ -600,11 +604,14 @@ const MyWorkSection = () => {
                                     </div>
                                     
                                     <div className="mb-4">
-                                        <div className="bg-black/20 rounded-lg overflow-hidden mb-3">
-                                            <img
+                                        <div className="bg-black/20 rounded-lg overflow-hidden mb-3 relative w-full aspect-video">
+                                            <Image
                                                 src={project.image || '/face2.jpeg'}
                                                 alt={project.title}
-                                                className="w-full h-full object-contain"
+                                                fill
+                                                className="object-contain"
+                                                loading="lazy"
+                                                sizes="(max-width: 768px) 100vw, 50vw"
                                             />
                                         </div>
                                         
@@ -702,11 +709,16 @@ const TestimonialsSection = () => {
                             </p>
                             
                             <div className="flex items-center gap-4">
-                                <img
-                                    src={testimonial.avatar}
-                                    alt={testimonial.author}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                />
+                                <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                                    <Image
+                                        src={testimonial.avatar}
+                                        alt={testimonial.author}
+                                        fill
+                                        className="object-cover"
+                                        loading="lazy"
+                                        sizes="48px"
+                                    />
+                                </div>
                                 <div>
                                     <p className="font-semibold text-lg">{testimonial.author}</p>
                                     <p className="text-sm text-white/50">{testimonial.role}</p>
@@ -887,12 +899,15 @@ const CertificatesSection = () => {
                                                 href={cert.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="cursor-pointer mb-4"
+                                                className="cursor-pointer mb-4 relative block w-full max-w-[300px] aspect-[4/3]"
                                             >
-                                                <img
+                                                <Image
                                                     src={(cert as any).image}
                                                     alt={cert.title}
-                                                    className="w-full max-w-[300px] h-auto object-contain hover:opacity-80 transition-opacity"
+                                                    fill
+                                                    className="object-contain hover:opacity-80 transition-opacity"
+                                                    loading="lazy"
+                                                    sizes="(max-width: 768px) 100vw, 300px"
                                                 />
                                             </a>
                                     </div>
@@ -1140,7 +1155,7 @@ const Footer = () => {
                     
                     <div className="w-full border-t border-white/10 pt-8 text-center">
                         <p className="text-sm text-white/50">
-                            Copyright © 2024 All Rights Reserved. Powered By Nerdzilla Tech
+                            Copyright © 2025 All Rights Reserved. Powered By Nerdzilla Tech
                         </p>
                     </div>
                     </div>
