@@ -1155,7 +1155,7 @@ const Footer = () => {
                     
                     <div className="w-full border-t border-white/10 pt-8 text-center">
                         <p className="text-sm text-white/50">
-                            Copyright © 2025 All Rights Reserved. Powered By Nerdzilla Tech
+                            Copyright © 2025 All Rights Reserved. Made BY Tushar Dogra
                         </p>
                     </div>
                     </div>
